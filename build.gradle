@@ -9,6 +9,27 @@ repositories {
     mavenCentral()
 }
 
+jar {
+  description = "Assembles a ready jar file"
+  doFirst {
+    into('lib') {
+      from configurations.compile
+    }
+  }
+}
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'Ufrom Telegram Bot',
+                'Implementation-Version': version,
+                'Main-Class': 'aabalde.bots.cmd.Main'
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
 dependencies {
+    compile group: 'org.telegram', name: 'telegrambots', version: '3.6'
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
