@@ -12,6 +12,12 @@ import org.telegram.telegrambots.exceptions.TelegramApiException;
  */
 public class UfromBot extends TelegramLongPollingBot{
 
+    private String botToken;
+
+    public UfromBot(String token){
+        this.botToken = token;
+    }
+
     @Override
     public void onUpdateReceived(Update update) {
         // We check if the update has a message and the message has text. If so, this is a message from privat chat
@@ -42,6 +48,6 @@ public class UfromBot extends TelegramLongPollingBot{
 
     @Override
     public String getBotToken() {
-        return "";
+        return this.botToken;
     }
 }
