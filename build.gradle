@@ -4,7 +4,7 @@ version '1.0'
 apply plugin: 'java'
 apply plugin: 'application'
 
-sourceCompatibility = 1.8
+//sourceCompatibility = 3.5
 
 // Main application class
 mainClassName = 'aabalde.bots.cmd.Main'
@@ -13,25 +13,15 @@ repositories {
     mavenCentral()
 }
 
-jar {
-  description = "Assembles a ready jar file"
-  doFirst {
-    into('lib') {
-      from configurations.compile
-    }
-  }
+task stage(dependsOn: ['build', 'clean'])
+build.mustRunAfter clean
+
+task copyToLib(type: Copy) {
+    into "$buildDir/lib"
+    from(configurations.compile)
 }
 
-task fatJar(type: Jar) {
-    manifest {
-        attributes 'Implementation-Title': 'Ufrom Telegram Bot',
-                'Implementation-Version': version,
-                'Main-Class': 'aabalde.bots.cmd.Main'
-    }
-    baseName = project.name + '-all'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-}
+stage.dependsOn(copyToLib)
 
 dependencies {
     compile group: 'org.telegram', name: 'telegrambots', version: '3.6'
