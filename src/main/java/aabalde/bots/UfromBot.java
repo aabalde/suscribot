@@ -8,9 +8,7 @@ import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -30,38 +28,37 @@ public class UfromBot extends TelegramLongPollingBot{
 
     private String botToken;
 
-    private String backupData;
-    private String backupUsers;
+    private String backupDataPath;
+    private String backupUsersPath;
 
     //Map with keys <LOCATION, USERS>
     private HashMap<String, List<BotUser>> data;
     //List with all the users contained in the system
     private List<BotUser> users;
 
-    public UfromBot(String token, HashMap<String, List<BotUser>> data, List<BotUser> users){
+    public UfromBot(String token, String backupData, String backupUsers){
         this.botToken = token;
+        this.backupDataPath = backupData;
+        this.backupUsersPath = backupUsers;
 
-
-        if(data == null){
-            this.data = new HashMap<>();
-        } else {
-            this.data = data;
+        this.data = new HashMap<>();
+        if(backupData != null && !backupData.isEmpty()){
+            try{
+                loadData();
+            } catch(Exception e){
+                e.printStackTrace();
+            }
         }
 
-        if(users == null){
-            this.users = new ArrayList<>();
-        } else {
-            this.users = users;
+        this.users = new ArrayList<>();
+        if(backupUsers != null && !backupData.isEmpty()){
+            try{
+                loadUsers();
+            } catch(Exception e){
+                e.printStackTrace();
+            }
         }
     }
-
-    public UfromBot(String token, HashMap<String, List<BotUser>> data, List<BotUser> users,
-                    String backupData, String backupUsers){
-        this(token, data, users);
-        this.backupData = backupData;
-        this.backupUsers = backupUsers;
-    }
-
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -161,7 +158,7 @@ public class UfromBot extends TelegramLongPollingBot{
     }
 
     private void backupData() throws Exception{
-        File f = new File(backupData);
+        File f = new File(backupDataPath);
         if(f.exists()){
             f.delete();
         }
@@ -178,7 +175,7 @@ public class UfromBot extends TelegramLongPollingBot{
     }
 
     private void backupUsers() throws Exception{
-        File f = new File(backupUsers);
+        File f = new File(backupUsersPath);
         if(f.exists()){
             f.delete();
         }
@@ -190,6 +187,50 @@ public class UfromBot extends TelegramLongPollingBot{
         pw.close();
     }
 
+    protected void loadData() throws Exception{
+        File dataFile = new File(this.backupDataPath);
+        if(!dataFile.exists()){
+            return;
+        }
+
+        BufferedReader br = new BufferedReader(new FileReader(dataFile));
+
+        String line;
+        String key = "";
+        List<BotUser> users = new ArrayList<>();
+        while((line = br.readLine())!= null){
+            if(line.contains("&&&")){
+                //Is an user
+                BotUser user = new BotUser(line);
+                users.add(user);
+            } else {
+                //Is a key
+                if(!key.isEmpty()){
+                    data.put(key, users);
+                    users = new ArrayList<>();
+                }
+                key = line;
+            }
+        }
+        //Add the last one
+        data.put(key, users);
+    }
+
+    protected void loadUsers() throws Exception{
+        File usersFile = new File(this.backupUsersPath);
+        if(!usersFile.exists()){
+            return;
+        }
+
+        BufferedReader br = new BufferedReader(new FileReader(usersFile));
+        String line;
+        while((line = br.readLine())!= null){
+            if(!line.isEmpty()){
+                BotUser user = new BotUser(line);
+                this.users.add(user);
+            }
+        }
+    }
 
     private void sendMessage(long chatId, String text){
         SendMessage message = new SendMessage() // Create a message object object

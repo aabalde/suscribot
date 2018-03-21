@@ -7,6 +7,8 @@ import org.telegram.telegrambots.api.objects.User;
  */
 public class BotUser {
 
+    private static String SPLITTER = "&&&";
+
     private Integer id; ///< Unique identifier for this user or bot
     private String firstName; ///< User‘s or bot’s first name
     private String lastName; ///< Optional. User‘s or bot’s last name
@@ -16,9 +18,21 @@ public class BotUser {
     }
 
     public BotUser(User user){
+        super();
         this.id = user.getId();
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
+    }
+
+    //userRepresentation: ID&&&Name
+    public BotUser(String userRepresentation){
+        super();
+        String[] params = userRepresentation.split(this.SPLITTER);
+        this.id = Integer.parseInt(params[0]);
+
+        String[] names = params[1].split(" ");
+        this.firstName = names[0];
+        this.lastName = names[1];
     }
 
     public Integer getId() {
@@ -49,7 +63,7 @@ public class BotUser {
     public String toString() {
         StringBuilder record = new StringBuilder();
         record.append(this.id);
-        record.append("&&&");
+        record.append(this.SPLITTER);
         record.append(this.firstName);
         if(this.lastName != null && !this.lastName.equals("")){
             record.append(" ");

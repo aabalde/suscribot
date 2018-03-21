@@ -2,7 +2,6 @@ package aabalde.bots;
 
 import aabalde.bots.cmd.BotUser;
 import aabalde.bots.exception.UfromException;
-import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
 import java.io.File;
@@ -195,7 +194,7 @@ public class UfromBotTest {
     public void test_backup() throws Exception{
         String dataFilePath = "src/test/resources/data.dat";
         String usersFilePath = "src/test/resources/users.dat";
-        UfromBot bot = new UfromBot("token", null, null, dataFilePath, usersFilePath);
+        UfromBot bot = new UfromBot("token", dataFilePath, usersFilePath);
 
         BotUser user = new BotUser();
         user.setId(123);
@@ -252,5 +251,17 @@ public class UfromBotTest {
 
         assertEquals("The resulting file content must match with the expected one: '" + expected + "'",
                 expected,backupUsers);
+    }
+
+    @Test
+    public void test_loadBackup() throws Exception{
+        String dataFilePath = "src/test/resources/backup-data.dat";
+        String usersFilePath = "src/test/resources/backup-users.dat";
+        UfromBot bot = new UfromBot("token", dataFilePath, usersFilePath);
+
+        String result = bot.print();
+
+        assertEquals("The result is not correct"," -- VIGO -- \nCaptain America\nIron Man\n\n" +
+                " -- GRANADA -- \nSpider Man\n\n",result);
     }
 }

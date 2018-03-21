@@ -29,7 +29,7 @@ public class Main {
 
         // Register our bot
         try {
-            botsApi.registerBot(new UfromBot(getBotToken(), null, null));
+            botsApi.registerBot(new UfromBot(getBotToken(), dataFilePath, usersFilePath));
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
