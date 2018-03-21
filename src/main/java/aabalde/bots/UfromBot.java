@@ -1,6 +1,5 @@
 package aabalde.bots;
 
-import aabalde.bots.cmd.BotUser;
 import aabalde.bots.exception.UfromException;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Message;

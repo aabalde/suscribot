@@ -1,6 +1,5 @@
 package aabalde.bots;
 
-import aabalde.bots.cmd.BotUser;
 import aabalde.bots.exception.UfromException;
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package aabalde.bots.cmd;
+package aabalde.bots;
 
 import org.telegram.telegrambots.api.objects.User;
 
