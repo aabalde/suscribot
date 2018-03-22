@@ -17,7 +17,6 @@ public class Main {
 
     private static String configFilePath = "src/main/resources/bot-token.txt";
     private static String dataFilePath = "src/main/resources/data.dat";
-    private static String usersFilePath = "src/main/resources/users.dat";
 
     public static void main(String[] args) {
         // Initialize Api Context
@@ -29,7 +28,7 @@ public class Main {
 
         // Register our bot
         try {
-            botsApi.registerBot(new UfromBot(getBotToken(), dataFilePath, usersFilePath));
+            botsApi.registerBot(new UfromBot(getBotToken(), dataFilePath));
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }

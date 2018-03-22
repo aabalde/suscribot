@@ -1,13 +1,19 @@
 package aabalde.bots;
 
 import aabalde.bots.exception.UfromException;
+import aabalde.bots.model.BotList;
+import aabalde.bots.model.UFromCSVFormat;
+import org.apache.commons.csv.CSVRecord;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -15,44 +21,38 @@ import java.util.*;
  */
 public class UfromBot extends TelegramLongPollingBot{
 
-    String addCommand = "/imfrom ";
-    String removeCommand = "/imnotfrom ";
-    String printCommand = "/wearefrom";
+    private static String NEWLIST_CMD = "/newlist ";
+    private static String DELETELIST_CMD = "/deletelist ";
+    private static String LISTS_CMD = "/lists";
+    private static String SHOWLIST_CMD = "/showlist ";
+    private static String SUBSCRIBE_CMD = "/subscribe ";
+    private static String UNSUBSCRIBE_CMD = "/unsubscribe ";
+    private static String HELP_CMD = "/ufrom";
 
     public enum Action{
-        ADD,
-        REMOVE,
-        PRINT
+        NEW,
+        DELETE,
+        LISTS,
+        SHOW,
+        SUBSCRIBE,
+        UNSUBSCRIBE,
+        HELP
     }
 
     private String botToken;
 
     private String backupDataPath;
-    private String backupUsersPath;
 
-    //Map with keys <LOCATION, USERS>
-    private HashMap<String, List<BotUser>> data;
-    //List with all the users contained in the system
-    private List<BotUser> users;
+    private List<BotList> lists;
 
-    public UfromBot(String token, String backupData, String backupUsers){
+    public UfromBot(String token, String backupData){
         this.botToken = token;
         this.backupDataPath = backupData;
-        this.backupUsersPath = backupUsers;
 
-        this.data = new HashMap<>();
+        this.lists = new ArrayList<>();
         if(backupData != null && !backupData.isEmpty()){
             try{
                 loadData();
-            } catch(Exception e){
-                e.printStackTrace();
-            }
-        }
-
-        this.users = new ArrayList<>();
-        if(backupUsers != null && !backupData.isEmpty()){
-            try{
-                loadUsers();
             } catch(Exception e){
                 e.printStackTrace();
             }
@@ -65,27 +65,55 @@ public class UfromBot extends TelegramLongPollingBot{
         if (update.hasMessage() && update.getMessage().hasText()) {
             Message message = update.getMessage();
             long chatId = message.getChatId();
-            String text = message.getText();
+
+            //Bot only for groups
+            if(!message.getChat().isGroupChat()){
+                String msg = "THIS BOT IS ONLY FOR WORKING WITH GROUPS\n\n";
+                msg = msg + "Additional info about the bot: \n" + help();
+                sendMessage(chatId,msg);
+                return;
+            }
+
+            String text = message.getText().trim();
             BotUser u = new BotUser(message.getFrom());
 
             try{
                 //Only work if a bot command has been received
                 if(commandReceived(text)){
                     switch (parseAction(text)){
-                        case ADD:
-                            add(text, u);
+                        case NEW:
+                            newList(text);
+                            sendMessage(chatId, "New list added");
+                            break;
+                        case DELETE:
+                            deleteList(text);
+                            backup();
+                            sendMessage(chatId, "List deleted");
+                            break;
+                        case LISTS:
+                            sendMessage(chatId, toStringLists());
+                            break;
+                        case SUBSCRIBE:
+                            subscribe(text, u);
                             backup();
                             sendMessage(chatId,
-                                    u.getFirstName() + " " + u.getLastName() + " added to location list");
+                                    u.getFirstName() + " " + u.getLastName() + " added to list");
                             break;
-                        case REMOVE:
-                            remove(text, u);
+                        case UNSUBSCRIBE:
+                            unsubscribe(text, u);
                             backup();
                             sendMessage(chatId,
-                                    "User " + u.getFirstName() + " " + u.getLastName() + " added to location list");
+                                    "User " + u.getFirstName() + " " + u.getLastName() + " removed list");
                             break;
-                        case PRINT:
-                            sendMessage(chatId, print());
+                        case SHOW:
+                            String[] cmdSplitted = text.split(" ");
+                            String listName = cmdSplitted[1];
+                            BotList list = getList(listName);
+                            if(list == null) throw new UfromException("No list found with name " + listName);
+                            sendMessage(chatId, list.toString());
+                            break;
+                        case HELP:
+                            sendMessage(chatId, help());
                             break;
                         default:
                             break;
@@ -99,90 +127,140 @@ public class UfromBot extends TelegramLongPollingBot{
         }
     }
 
-    protected void add(String text, BotUser u) throws Exception{
-        if(users.contains(u)){
-            throw new UfromException("User already exists");
+    protected void newList(String text) throws UfromException{
+        int firstSpaceOcurrence = text.indexOf(" ");
+        int secondSpaceOcurrence = text.indexOf(" ",firstSpaceOcurrence + 1);
+
+        String cmdPlusName;
+        String name;
+        String description = null;
+        if(secondSpaceOcurrence > 0){
+            cmdPlusName = text.subSequence(0, text.indexOf(" ", firstSpaceOcurrence + 1)).toString();
+            name = cmdPlusName.split(" ")[1];
+            description = text.subSequence(secondSpaceOcurrence, text.length()).toString().trim();
+        } else {
+            name = text.split(" ")[1];
         }
 
-        String city = text.subSequence(text.indexOf(" ") + 1, text.length()).toString().toUpperCase();
-        if(data.containsKey(city)){
-            List<BotUser> userList = this.data.get(city);
-            if(!userList.contains(u)){
-                userList.add(u);
-            }
+        if(getList(name) != null){
+            throw new UfromException("List already exists");
         }
-        else
-        {
-            ArrayList<BotUser> list = new ArrayList<>();
-            list.add(u);
-            this.data.put(city, list);
-        }
-        this.users.add(u);
+
+        BotList newList = new BotList(name, description);
+        this.lists.add(newList);
     }
 
-    protected void remove(String text, BotUser u) throws Exception{
-        if(!users.contains(u)){
-            throw new UfromException("Not existent user");
-        }
+    protected void deleteList(String text){
+        String name = text.split(" ")[1];
 
-        String city = text.subSequence(text.indexOf(" ") + 1, text.length()).toString().toUpperCase();
-        if(data.containsKey(city)){
-            List<BotUser> cityUsers = this.data.get(city);
-            if(cityUsers.contains(u)){
-                cityUsers.remove(u);
-                this.users.remove(u);
-                if(cityUsers.size() == 0) data.remove(city);
+        ListIterator<BotList> iterator = this.lists.listIterator();
+        while(iterator.hasNext()){
+            BotList list = iterator.next();
+            if(list.getName().toUpperCase().equals(name.toUpperCase())){
+                iterator.remove();
+                return;
             }
         }
     }
 
-    protected String print(){
-        StringBuilder message = new StringBuilder();
+    protected void subscribe(String text, BotUser user) throws UfromException{
+        String[] textSplitted = text.split(" ");
+        if(textSplitted.length != 3) throw new UfromException("Wrong command. /subscribe <list> <category> " +
+                "(No whitespaces in the names)");
+        String listName = textSplitted[1];
+        String category = textSplitted[2].toUpperCase();
 
-        for(String key : this.data.keySet()){
-            message.append(" -- " + key + " -- ");
-            List<BotUser> users = this.data.get(key);
-            for(BotUser u : users){
-                message.append("\n" + u.getFirstName() + " " + u.getLastName());
-            }
-            message.append("\n\n");
+        BotList list = getList(listName);
+        if(list == null){
+            throw new UfromException("Non existent list");
         }
 
-        return message.toString();
+        list.subscribe(category, user);
+    }
+
+    protected void unsubscribe(String text, BotUser user) throws UfromException{
+        String[] textSplitted = text.split(" ");
+        if(textSplitted.length != 2) throw new UfromException("Wrong command. /unsubscribe <list> <category> " +
+                "(No whitespaces in the names)");
+        String listName = textSplitted[1];
+
+        BotList list = getList(listName);
+        if(list == null){
+            throw new UfromException("Non existent list");
+        }
+
+        list.unsubscribe(user);
+    }
+
+    protected String help() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("This is a bot for subscribing list management. For using this bot you have the following options:\n\n");
+        sb.append("/newlist <name> <description [optional]>\n\nCreates a new list with the name and description provided. " +
+                "No whitespaces in the name.\n\n\n");
+        sb.append("/deletelist <name>\n\nDeletes a list with the name provided. No whitespaces in the name.\n\n\n");
+        sb.append("/lists\n\nShows all the lists stored in the system.\n\n\n");
+        sb.append("/subscribe <list> <category>\n\nSubscribe the user to the list-category provided.\n\n\n");
+        sb.append("/unsubscribe <list>\n\nUnsubscribe the user from the list provided.\n\n\n");
+        sb.append("/showlist <list>\n\nShows all the categories and users subscribed to the list provided.\n\n\n");
+
+        return sb.toString();
+    }
+
+    protected String toStringLists(){
+        StringBuilder sb = new StringBuilder();
+
+        if(this.lists.size() == 0){
+            return "";
+        }
+
+        sb.append("NAME  -  DESCRIPTION\n\n");
+
+        for(BotList list : this.lists){
+            sb.append(list.getName());
+            String description = list.getDescription();
+            if(description != null && !description.isEmpty()){
+                sb.append(" - " + description);
+            }
+            sb.append("\n\n");
+        }
+
+        return sb.toString();
+    }
+
+    protected BotList getList(String listName) throws UfromException{
+        String listToSearch = listName.trim().toUpperCase();
+        for(BotList list : this.lists){
+            if(list.getName().toUpperCase().equals(listToSearch)){
+                return list;
+            }
+        }
+        return null;
     }
 
     protected void backup() throws Exception{
-        backupData();
-        backupUsers();
-    }
-
-    private void backupData() throws Exception{
         File f = new File(backupDataPath);
         if(f.exists()){
             f.delete();
         }
         f.createNewFile();
         PrintWriter pw = new PrintWriter(new FileWriter(f, true));
-        for(String key : this.data.keySet()){
-            pw.println(key);
-            List<BotUser> users = this.data.get(key);
-            for(BotUser user : users){
-                pw.println(user);
+
+        //Navigate data and store it in the file
+        for(BotList list : this.lists){
+            String listName = list.getName();
+            String description = list.getDescription();
+            HashMap<String,List<BotUser>> listData = list.getData();
+            for(String key : listData.keySet()){
+                String category = key;
+                List<BotUser> users = listData.get(category);
+                for(BotUser user : users){
+                    String userRep = user.toString();
+                    UFromCSVFormat.printCSVRecord(pw, listName, description, category, userRep);
+                }
             }
         }
-        pw.close();
-    }
 
-    private void backupUsers() throws Exception{
-        File f = new File(backupUsersPath);
-        if(f.exists()){
-            f.delete();
-        }
-        f.createNewFile();
-        PrintWriter pw = new PrintWriter(new FileWriter(f, true));
-        for(BotUser user : this.users){
-            pw.println(user);
-        }
         pw.close();
     }
 
@@ -191,50 +269,37 @@ public class UfromBot extends TelegramLongPollingBot{
         if(!dataFile.exists()){
             return;
         }
+        FileReader fr = new FileReader(dataFile);
 
-        BufferedReader br = new BufferedReader(new FileReader(dataFile));
+        List<CSVRecord> records = UFromCSVFormat.readCSVRecord(fr);
+        for(CSVRecord record : records){
+            String listName = record.get(0);
+            String listDesc = record.get(1);
+            String category = record.get(2);
+            String userRep = record.get(3);
 
-        String line;
-        String key = "";
-        List<BotUser> users = new ArrayList<>();
-        while((line = br.readLine())!= null){
-            if(line.contains("&&&")){
-                //Is an user
-                BotUser user = new BotUser(line);
-                users.add(user);
-            } else {
-                //Is a key
-                if(!key.isEmpty()){
-                    data.put(key, users);
-                    users = new ArrayList<>();
-                }
-                key = line;
+            BotList list = getList(listName);
+            if(list == null){
+                list = new BotList(listName,listDesc);
+                this.lists.add(list);
             }
-        }
-        //Add the last one
-        data.put(key, users);
-    }
-
-    protected void loadUsers() throws Exception{
-        File usersFile = new File(this.backupUsersPath);
-        if(!usersFile.exists()){
-            return;
-        }
-
-        BufferedReader br = new BufferedReader(new FileReader(usersFile));
-        String line;
-        while((line = br.readLine())!= null){
-            if(!line.isEmpty()){
-                BotUser user = new BotUser(line);
-                this.users.add(user);
+            try{
+                list.subscribe(category, new BotUser(userRep));
+            } catch (UfromException e){
+                //Continue
             }
         }
     }
 
     private void sendMessage(long chatId, String text){
+        String textToSend = text;
+        if(textToSend == null || textToSend.isEmpty()){
+            textToSend = "Empty";
+        }
+
         SendMessage message = new SendMessage() // Create a message object object
                 .setChatId(chatId)
-                .setText(text);
+                .setText(textToSend);
         try {
             execute(message); // Sending our message object to user
         } catch (TelegramApiException e) {
@@ -243,20 +308,39 @@ public class UfromBot extends TelegramLongPollingBot{
     }
 
     private Action parseAction(String text){
-        if(text.startsWith(addCommand)){
-            return Action.ADD;
+        if(text.startsWith(NEWLIST_CMD)){
+            return Action.NEW;
         }
-        if(text.startsWith(removeCommand)){
-            return Action.REMOVE;
+        if(text.startsWith(DELETELIST_CMD)){
+            return Action.DELETE;
         }
-        if(text.startsWith(printCommand)){
-            return Action.PRINT;
+        if(text.startsWith(LISTS_CMD)){
+            return Action.LISTS;
         }
+        if(text.startsWith(SHOWLIST_CMD)){
+            return Action.SHOW;
+        }
+        if(text.startsWith(SUBSCRIBE_CMD)){
+            return Action.SUBSCRIBE;
+        }
+        if(text.startsWith(UNSUBSCRIBE_CMD)){
+            return Action.UNSUBSCRIBE;
+        }
+        if(text.startsWith(HELP_CMD)){
+            return Action.HELP;
+        }
+
         return null;
     }
 
     private boolean commandReceived(String text){
-        return (text.startsWith(addCommand) || text.startsWith(removeCommand) || text.startsWith(printCommand));
+        return (text.startsWith(NEWLIST_CMD) ||
+                text.startsWith(DELETELIST_CMD) ||
+                text.startsWith(LISTS_CMD) ||
+                text.startsWith(SHOWLIST_CMD) ||
+                text.startsWith(SUBSCRIBE_CMD) ||
+                text.startsWith(UNSUBSCRIBE_CMD) ||
+                text.startsWith(HELP_CMD));
     }
 
     @Override
