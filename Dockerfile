@@ -1,4 +1,12 @@
-FROM repo.gradiant.org:9006/hgda-java:1.0.0
+FROM debian:stretch
+
+#Dependencies installation and gradle download
+RUN apt-get update && apt-get install -y wget unzip default-jdk && \
+	cd /root && \
+    wget https://services.gradle.org/distributions/gradle-3.5-bin.zip && \
+    unzip gradle-3.5-bin.zip && \
+    ln -s /root/gradle-3.5/bin/gradle /usr/local/bin/gradle && \
+    rm gradle-3.5-bin.zip
 
 WORKDIR /root
 
