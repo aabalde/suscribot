@@ -9,9 +9,9 @@ public class BotUser {
 
     private static String SPLITTER = "&&&";
 
-    private Integer id; ///< Unique identifier for this user or bot
-    private String firstName; ///< User‘s or bot’s first name
-    private String lastName; ///< Optional. User‘s or bot’s last name
+    private Integer id;
+    private String firstName;
+    private String lastName;
 
     public BotUser(){
         super();
