@@ -3,6 +3,7 @@ package aabalde.bots;
 import aabalde.bots.exception.SuscriBotException;
 import aabalde.bots.model.BotList;
 import aabalde.bots.model.BotCSVFormat;
+import aabalde.bots.model.Emojis;
 import org.apache.commons.csv.CSVRecord;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Message;
@@ -205,8 +206,7 @@ public class SuscriBot extends TelegramLongPollingBot{
         for(MessageEntity entity : entities){
             if(entity.getType().equals("text_mention")){
                 BotUser user = new BotUser(entity.getUser());
-                profile.append('\uD83D');
-                profile.append('\uDC64');
+                profile.append(Emojis.PERSON_SILOUETTE);
                 profile.append(user.getFirstName());
                 String lastName = user.getLastName();
                 if(lastName != null){
@@ -218,16 +218,18 @@ public class SuscriBot extends TelegramLongPollingBot{
                 //Collect user data
                 for(BotList list : lists){
                     HashMap<String, List<BotUser>> listData = list.getData();
+                    profile.append(Emojis.NOTEPAD + " " + list.getName() + "\n");
                     for(String category : listData.keySet()){
                         List<BotUser> users = listData.get(category);
                         if(users.contains(user)){
-                            profile.append(list.getName());
-                            profile.append(" " + (char)10145 + (char)65039);
-                            profile.append(" " + category);
-                            profile.append("\n-------------");
+                            profile.append(Emojis.BLUE_DIAMOND);
+                            profile.append(" " + category + " ");
+                            profile.append(Emojis.BLUE_DIAMOND);
                             profile.append("\n");
                         }
                     }
+                    profile.append("-------------");
+                    profile.append("\n");
                 }
 
             } else {
@@ -262,14 +264,15 @@ public class SuscriBot extends TelegramLongPollingBot{
             return "";
         }
 
-        sb.append("LISTS\n\n");
+//        sb.append(Emojis.NOTEPAD + " LISTS " + Emojis.NOTEPAD +"\n\n");
 
         for(BotList list : this.lists){
+            sb.append(Emojis.NOTEPAD + " ");
             sb.append(list.getName());
-            String description = list.getDescription();
-            if(description != null && !description.isEmpty()){
-                sb.append(" - " + description);
-            }
+//            String description = list.getDescription();
+//            if(description != null && !description.isEmpty()){
+//                sb.append(" - " + description);
+//            }
             sb.append("\n\n");
         }
 
