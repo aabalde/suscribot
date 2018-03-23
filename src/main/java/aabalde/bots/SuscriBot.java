@@ -245,12 +245,11 @@ public class SuscriBot extends TelegramLongPollingBot{
         StringBuilder sb = new StringBuilder();
 
         sb.append("This is a bot for subscribing list management. For using this bot you have the following options:\n\n");
-        sb.append("/newlist <name> <description [optional]>\n\nCreates a new list with the name and description provided. " +
-                "No whitespaces in the name.\n\n\n");
+        sb.append("/newlist <name>\n\nCreates a new list with the name provided. " + "No whitespaces allowed.\n\n\n");
         sb.append("/deletelist <name>\n\nDeletes a list with the name provided. No whitespaces in the name.\n\n\n");
         sb.append("/lists\n\nShows all the lists stored in the system.\n\n\n");
         sb.append("/subscribe <list> <category>\n\nSubscribe the user to the list-category provided.\n\n\n");
-        sb.append("/unsubscribe <list>\n\nUnsubscribe the user from the list provided.\n\n\n");
+        sb.append("/unsubscribe <list> <category>\n\nUnsubscribe the user from the list-category provided.\n\n\n");
         sb.append("/profile <mention-user>\n\nShows an user profile. (List and categories where is subscribed)\n\n\n");
         sb.append("/showlist <list>\n\nShows all the categories and users subscribed to the list provided.\n\n\n");
 

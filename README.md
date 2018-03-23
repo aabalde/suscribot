@@ -13,9 +13,19 @@ Telegram Bot for managing the list of locations where the users live.
 
 ## Versions
 
-- **Version: 2.0**
+- **Version: 3.0**
 
   Released in 23 of March from 2018
+
+  ```
+  **Changelog**
+
+  - Profile functionality
+  - Emojis addon
+
+- **Version: 2.0**
+
+  Released in 22 of March from 2018
 
   ```
   **Changelog**
