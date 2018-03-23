@@ -308,25 +308,25 @@ public class SuscriBot extends TelegramLongPollingBot{
     }
 
     private Action parseAction(String text){
-        if(text.startsWith(NEWLIST_CMD)){
+        if(text.toLowerCase().startsWith(NEWLIST_CMD)){
             return Action.NEW;
         }
-        if(text.startsWith(DELETELIST_CMD)){
+        if(text.toLowerCase().startsWith(DELETELIST_CMD)){
             return Action.DELETE;
         }
-        if(text.startsWith(LISTS_CMD)){
+        if(text.toLowerCase().startsWith(LISTS_CMD)){
             return Action.LISTS;
         }
-        if(text.startsWith(SHOWLIST_CMD)){
+        if(text.toLowerCase().startsWith(SHOWLIST_CMD)){
             return Action.SHOW;
         }
-        if(text.startsWith(SUBSCRIBE_CMD)){
+        if(text.toLowerCase().startsWith(SUBSCRIBE_CMD)){
             return Action.SUBSCRIBE;
         }
-        if(text.startsWith(UNSUBSCRIBE_CMD)){
+        if(text.toLowerCase().startsWith(UNSUBSCRIBE_CMD)){
             return Action.UNSUBSCRIBE;
         }
-        if(text.startsWith(HELP_CMD)){
+        if(text.toLowerCase().startsWith(HELP_CMD)){
             return Action.HELP;
         }
 
@@ -334,13 +334,13 @@ public class SuscriBot extends TelegramLongPollingBot{
     }
 
     private boolean commandReceived(String text){
-        return (text.startsWith(NEWLIST_CMD) ||
-                text.startsWith(DELETELIST_CMD) ||
-                text.startsWith(LISTS_CMD) ||
-                text.startsWith(SHOWLIST_CMD) ||
-                text.startsWith(SUBSCRIBE_CMD) ||
-                text.startsWith(UNSUBSCRIBE_CMD) ||
-                text.startsWith(HELP_CMD));
+        return (text.toLowerCase().startsWith(NEWLIST_CMD) ||
+                text.toLowerCase().startsWith(DELETELIST_CMD) ||
+                text.toLowerCase().startsWith(LISTS_CMD) ||
+                text.toLowerCase().startsWith(SHOWLIST_CMD) ||
+                text.toLowerCase().startsWith(SUBSCRIBE_CMD) ||
+                text.toLowerCase().startsWith(UNSUBSCRIBE_CMD) ||
+                text.toLowerCase().startsWith(HELP_CMD));
     }
 
     @Override
