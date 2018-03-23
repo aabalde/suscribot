@@ -180,7 +180,7 @@ public class SuscriBot extends TelegramLongPollingBot{
 
     protected void unsubscribe(String text, BotUser user) throws SuscriBotException {
         String[] textSplitted = text.split(" ");
-        if(textSplitted.length != 2) throw new SuscriBotException("Wrong command. /unsubscribe <list> <category> " +
+        if(textSplitted.length != 3) throw new SuscriBotException("Wrong command. /unsubscribe <list> <category> " +
                 "(No whitespaces in the names)");
         String listName = textSplitted[1];
 
