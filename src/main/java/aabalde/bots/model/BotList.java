@@ -1,7 +1,7 @@
 package aabalde.bots.model;
 
 import aabalde.bots.BotUser;
-import aabalde.bots.exception.UfromException;
+import aabalde.bots.exception.SuscriBotException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,9 +49,9 @@ public class BotList {
         this.data.putAll(data);
     }
 
-    public void subscribe(String category, BotUser user) throws UfromException{
+    public void subscribe(String category, BotUser user) throws SuscriBotException {
         if(isUserSubscribed(user)){
-            throw new UfromException("User already subscribed to " + this.name);
+            throw new SuscriBotException("User already subscribed to " + this.name);
         }
 
         this.users.add(user);
@@ -65,9 +65,9 @@ public class BotList {
         }
     }
 
-    public void unsubscribe(BotUser user) throws UfromException{
+    public void unsubscribe(BotUser user) throws SuscriBotException {
         if(isUserSubscribed(user)){
-            throw new UfromException("Non existent user in " + this.name);
+            throw new SuscriBotException("Non existent user in " + this.name);
         }
 
         String category = "";
@@ -86,7 +86,7 @@ public class BotList {
                 this.categories.remove(category);
             }
         } else {
-            throw new UfromException("Non existent category " + category);
+            throw new SuscriBotException("Non existent category " + category);
         }
     }
 

@@ -1,6 +1,6 @@
 package aabalde.bots.cmd;
 
-import aabalde.bots.UfromBot;
+import aabalde.bots.SuscriBot;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
@@ -28,7 +28,7 @@ public class Main {
 
         // Register our bot
         try {
-            botsApi.registerBot(new UfromBot(getBotToken(), dataFilePath));
+            botsApi.registerBot(new SuscriBot(getBotToken(), dataFilePath));
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }

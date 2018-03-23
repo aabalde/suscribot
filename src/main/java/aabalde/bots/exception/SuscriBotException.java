@@ -3,13 +3,13 @@ package aabalde.bots.exception;
 /**
  * Created by aabalde on 21/03/18.
  */
-public class UfromException extends Exception{
+public class SuscriBotException extends Exception{
 
-    public UfromException(){
+    public SuscriBotException(){
         super();
     }
 
-    public UfromException(String message){
+    public SuscriBotException(String message){
         super(message);
     }
 }

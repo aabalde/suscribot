@@ -1,6 +1,6 @@
 package aabalde.bots;
 
-import aabalde.bots.exception.UfromException;
+import aabalde.bots.exception.SuscriBotException;
 import aabalde.bots.model.BotList;
 import aabalde.bots.model.UFromCSVFormat;
 import org.apache.commons.csv.CSVRecord;
@@ -19,7 +19,7 @@ import java.util.*;
 /**
  * Created by aabalde on 21/03/18.
  */
-public class UfromBot extends TelegramLongPollingBot{
+public class SuscriBot extends TelegramLongPollingBot{
 
     private static String NEWLIST_CMD = "/newlist ";
     private static String DELETELIST_CMD = "/deletelist ";
@@ -45,7 +45,7 @@ public class UfromBot extends TelegramLongPollingBot{
 
     private List<BotList> lists;
 
-    public UfromBot(String token, String backupData){
+    public SuscriBot(String token, String backupData){
         this.botToken = token;
         this.backupDataPath = backupData;
 
@@ -109,7 +109,7 @@ public class UfromBot extends TelegramLongPollingBot{
                             String[] cmdSplitted = text.split(" ");
                             String listName = cmdSplitted[1];
                             BotList list = getList(listName);
-                            if(list == null) throw new UfromException("No list found with name " + listName);
+                            if(list == null) throw new SuscriBotException("No list found with name " + listName);
                             sendMessage(chatId, list.toString());
                             break;
                         case HELP:
@@ -119,7 +119,7 @@ public class UfromBot extends TelegramLongPollingBot{
                             break;
                     }
                 }
-            } catch(UfromException e){
+            } catch(SuscriBotException e){
                 sendMessage(chatId, e.getMessage());
             } catch(Exception e){
                 sendMessage(chatId, "ERROR: " + e.getMessage());
@@ -127,7 +127,7 @@ public class UfromBot extends TelegramLongPollingBot{
         }
     }
 
-    protected void newList(String text) throws UfromException{
+    protected void newList(String text) throws SuscriBotException {
         int firstSpaceOcurrence = text.indexOf(" ");
         int secondSpaceOcurrence = text.indexOf(" ",firstSpaceOcurrence + 1);
 
@@ -143,7 +143,7 @@ public class UfromBot extends TelegramLongPollingBot{
         }
 
         if(getList(name) != null){
-            throw new UfromException("List already exists");
+            throw new SuscriBotException("List already exists");
         }
 
         BotList newList = new BotList(name, description);
@@ -163,30 +163,30 @@ public class UfromBot extends TelegramLongPollingBot{
         }
     }
 
-    protected void subscribe(String text, BotUser user) throws UfromException{
+    protected void subscribe(String text, BotUser user) throws SuscriBotException {
         String[] textSplitted = text.split(" ");
-        if(textSplitted.length != 3) throw new UfromException("Wrong command. /subscribe <list> <category> " +
+        if(textSplitted.length != 3) throw new SuscriBotException("Wrong command. /subscribe <list> <category> " +
                 "(No whitespaces in the names)");
         String listName = textSplitted[1];
         String category = textSplitted[2].toUpperCase();
 
         BotList list = getList(listName);
         if(list == null){
-            throw new UfromException("Non existent list");
+            throw new SuscriBotException("Non existent list");
         }
 
         list.subscribe(category, user);
     }
 
-    protected void unsubscribe(String text, BotUser user) throws UfromException{
+    protected void unsubscribe(String text, BotUser user) throws SuscriBotException {
         String[] textSplitted = text.split(" ");
-        if(textSplitted.length != 2) throw new UfromException("Wrong command. /unsubscribe <list> <category> " +
+        if(textSplitted.length != 2) throw new SuscriBotException("Wrong command. /unsubscribe <list> <category> " +
                 "(No whitespaces in the names)");
         String listName = textSplitted[1];
 
         BotList list = getList(listName);
         if(list == null){
-            throw new UfromException("Non existent list");
+            throw new SuscriBotException("Non existent list");
         }
 
         list.unsubscribe(user);
@@ -228,7 +228,7 @@ public class UfromBot extends TelegramLongPollingBot{
         return sb.toString();
     }
 
-    protected BotList getList(String listName) throws UfromException{
+    protected BotList getList(String listName) throws SuscriBotException {
         String listToSearch = listName.trim().toUpperCase();
         for(BotList list : this.lists){
             if(list.getName().toUpperCase().equals(listToSearch)){
@@ -285,7 +285,7 @@ public class UfromBot extends TelegramLongPollingBot{
             }
             try{
                 list.subscribe(category, new BotUser(userRep));
-            } catch (UfromException e){
+            } catch (SuscriBotException e){
                 //Continue
             }
         }
@@ -345,7 +345,7 @@ public class UfromBot extends TelegramLongPollingBot{
 
     @Override
     public String getBotUsername() {
-        return "UfromBot";
+        return "SuscriBot";
     }
 
     @Override
