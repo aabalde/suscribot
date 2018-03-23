@@ -50,10 +50,6 @@ public class BotList {
     }
 
     public void subscribe(String category, BotUser user) throws SuscriBotException {
-        if(isUserSubscribed(user)){
-            throw new SuscriBotException("User already subscribed to " + this.name);
-        }
-
         this.users.add(user);
         if(isCategoryCreated(category)){
             this.data.get(category).add(user);
@@ -95,10 +91,13 @@ public class BotList {
         StringBuilder message = new StringBuilder();
 
         for(String key : this.data.keySet()){
-            message.append(" -- " + key + " -- ");
+            message.append(Emojis.BLUE_DIAMOND + " " + key + " " + Emojis.BLUE_DIAMOND);
             List<BotUser> users = this.data.get(key);
             for(BotUser u : users){
-                message.append("\n" + u.getFirstName() + " " + u.getLastName());
+                message.append("\n" + Emojis.PERSON_SILOUETTE + " " + u.getFirstName());
+                if(u.getLastName() != null){
+                    message.append(" " + u.getLastName());
+                }
             }
             message.append("\n\n");
         }
