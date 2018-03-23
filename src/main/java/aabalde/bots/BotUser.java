@@ -32,7 +32,9 @@ public class BotUser {
 
         String[] names = params[1].split(" ");
         this.firstName = names[0];
-        this.lastName = names[1];
+        if(names.length > 1){
+            this.lastName = names[1];
+        }
     }
 
     public Integer getId() {
