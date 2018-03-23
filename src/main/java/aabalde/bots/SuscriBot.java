@@ -6,6 +6,7 @@ import aabalde.bots.model.BotCSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Message;
+import org.telegram.telegrambots.api.objects.MessageEntity;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
@@ -27,6 +28,7 @@ public class SuscriBot extends TelegramLongPollingBot{
     private static String SHOWLIST_CMD = "/showlist ";
     private static String SUBSCRIBE_CMD = "/subscribe ";
     private static String UNSUBSCRIBE_CMD = "/unsubscribe ";
+    private static String PROFILE_CMD = "/profile";
     private static String HELP_CMD = "/ufrom";
 
     public enum Action{
@@ -36,6 +38,7 @@ public class SuscriBot extends TelegramLongPollingBot{
         SHOW,
         SUBSCRIBE,
         UNSUBSCRIBE,
+        PROFILE,
         HELP
     }
 
@@ -111,6 +114,10 @@ public class SuscriBot extends TelegramLongPollingBot{
                             BotList list = getList(listName);
                             if(list == null) throw new SuscriBotException("No list found with name " + listName);
                             sendMessage(chatId, list.toString());
+                            break;
+                        case PROFILE:
+                            String userProfile = profile(message);
+                            sendMessage(chatId, userProfile);
                             break;
                         case HELP:
                             sendMessage(chatId, help());
@@ -192,6 +199,46 @@ public class SuscriBot extends TelegramLongPollingBot{
         list.unsubscribe(user);
     }
 
+    protected String profile(Message message) throws SuscriBotException{
+        List<MessageEntity> entities = message.getEntities();
+        StringBuilder profile = new StringBuilder();
+        for(MessageEntity entity : entities){
+            if(entity.getType().equals("text_mention")){
+                BotUser user = new BotUser(entity.getUser());
+                profile.append('\uD83D');
+                profile.append('\uDC64');
+                profile.append(user.getFirstName());
+                String lastName = user.getLastName();
+                if(lastName != null){
+                    profile.append(" " + lastName);
+                }
+                profile.append("\n\n");
+                profile.append("-------------\n");
+
+                //Collect user data
+                for(BotList list : lists){
+                    HashMap<String, List<BotUser>> listData = list.getData();
+                    for(String category : listData.keySet()){
+                        List<BotUser> users = listData.get(category);
+                        if(users.contains(user)){
+                            profile.append(list.getName());
+                            profile.append(" " + (char)10145 + (char)65039);
+                            profile.append(" " + category);
+                            profile.append("\n-------------");
+                            profile.append("\n");
+                        }
+                    }
+                }
+
+            } else {
+                if(entity.getType().equals("mention")){
+                   throw new SuscriBotException("Sorry, you have not soul... (Wrong user mention made)");
+                }
+            }
+        }
+        return profile.toString();
+    }
+
     protected String help() {
         StringBuilder sb = new StringBuilder();
 
@@ -202,6 +249,7 @@ public class SuscriBot extends TelegramLongPollingBot{
         sb.append("/lists\n\nShows all the lists stored in the system.\n\n\n");
         sb.append("/subscribe <list> <category>\n\nSubscribe the user to the list-category provided.\n\n\n");
         sb.append("/unsubscribe <list>\n\nUnsubscribe the user from the list provided.\n\n\n");
+        sb.append("/profile <mention-user>\n\nShows an user profile. (List and categories where is subscribed)\n\n\n");
         sb.append("/showlist <list>\n\nShows all the categories and users subscribed to the list provided.\n\n\n");
 
         return sb.toString();
@@ -214,7 +262,7 @@ public class SuscriBot extends TelegramLongPollingBot{
             return "";
         }
 
-        sb.append("NAME  -  DESCRIPTION\n\n");
+        sb.append("LISTS\n\n");
 
         for(BotList list : this.lists){
             sb.append(list.getName());
@@ -326,6 +374,9 @@ public class SuscriBot extends TelegramLongPollingBot{
         if(text.toLowerCase().startsWith(UNSUBSCRIBE_CMD)){
             return Action.UNSUBSCRIBE;
         }
+        if(text.toLowerCase().startsWith(PROFILE_CMD)){
+            return Action.PROFILE;
+        }
         if(text.toLowerCase().startsWith(HELP_CMD)){
             return Action.HELP;
         }
@@ -340,6 +391,7 @@ public class SuscriBot extends TelegramLongPollingBot{
                 text.toLowerCase().startsWith(SHOWLIST_CMD) ||
                 text.toLowerCase().startsWith(SUBSCRIBE_CMD) ||
                 text.toLowerCase().startsWith(UNSUBSCRIBE_CMD) ||
+                text.toLowerCase().startsWith(PROFILE_CMD) ||
                 text.toLowerCase().startsWith(HELP_CMD));
     }
 
