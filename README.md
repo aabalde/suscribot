@@ -28,7 +28,9 @@ Bot commands:
 
   **help** - More detailed info about bot usage.
 
+Comando docker para ejecutar:
 
+docker run -d -v /home/aabalde/Random/Telegram/Bots/suscribot/src/main/resources/:/root/resources --name suscribot suscribot
 
 ## Versions
 

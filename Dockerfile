@@ -1,5 +1,7 @@
 FROM debian:stretch
 
+ENV GRADLE_OPTS -Dfile.encoding=utf-8
+
 #Dependencies installation and gradle download
 RUN apt-get update && apt-get install -y wget unzip default-jdk && \
 	cd /root && \
