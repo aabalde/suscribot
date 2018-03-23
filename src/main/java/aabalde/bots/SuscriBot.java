@@ -30,7 +30,7 @@ public class SuscriBot extends TelegramLongPollingBot{
     private static String SUBSCRIBE_CMD = "/subscribe ";
     private static String UNSUBSCRIBE_CMD = "/unsubscribe ";
     private static String PROFILE_CMD = "/profile";
-    private static String HELP_CMD = "/ufrom";
+    private static String HELP_CMD = "/suscribot";
 
     public enum Action{
         NEW,

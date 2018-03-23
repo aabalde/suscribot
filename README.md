@@ -1,14 +1,33 @@
-# Ufrom
+# SuscriBot
 
 ## What is?
 
-Telegram Bot for managing the list of locations where the users live.
+Telegram bot for managing lists with categories where the users can be subscribed.
 
 ## Dependencies
 
   - **telegrambots** v3.6
 
 ## Getting Started
+
+Bot commands:
+
+  **newlist** - Creates a new list with the name provided. No whitespaces allowed.
+
+  **deletelist** - Deletes a list with the name provided. No whitespaces in the name.
+
+  **lists** - Shows all the lists stored in the system.
+
+  **subscribe** - Subscribe the user to the list-category provided.
+
+  **unsubscribe** - Unsubscribe the user from the list-category provided.
+
+  **profile** - Shows an user profile. (List and categories where is subscribed).
+
+  **showlist** - Shows the list content. Provide a list name.
+
+  **help** - More detailed info about bot usage.
+
 
 
 ## Versions
