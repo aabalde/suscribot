@@ -66,7 +66,7 @@ public class BotList {
     }
 
     public void unsubscribe(BotUser user) throws SuscriBotException {
-        if(isUserSubscribed(user)){
+        if(!isUserSubscribed(user)){
             throw new SuscriBotException("Non existent user in " + this.name);
         }
 
