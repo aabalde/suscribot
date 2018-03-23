@@ -71,7 +71,7 @@ public class SuscriBot extends TelegramLongPollingBot{
             long chatId = message.getChatId();
 
             //Bot only for groups
-            if(!message.getChat().isGroupChat()){
+            if(!message.getChat().isGroupChat() && !message.getChat().isSuperGroupChat()){
                 String msg = "THIS BOT IS ONLY FOR WORKING WITH GROUPS\n\n";
                 msg = msg + "Additional info about the bot: \n" + help();
                 sendMessage(chatId,msg);
