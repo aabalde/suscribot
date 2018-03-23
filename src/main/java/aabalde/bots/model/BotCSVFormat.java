@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Created by aabalde on 22/03/18.
  */
-public class UFromCSVFormat {
+public class BotCSVFormat {
 
     public static CSVFormat csvFormat = CSVFormat.RFC4180
             .withDelimiter(',')
@@ -36,7 +36,7 @@ public class UFromCSVFormat {
         String category = (String)values[2];
         String user = (String)values[3];
 
-        UFromCSVFormat.csvFormat.printRecord(appendable,
+        BotCSVFormat.csvFormat.printRecord(appendable,
                 list,
                 desc,
                 category,

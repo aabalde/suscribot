@@ -2,7 +2,7 @@ package aabalde.bots;
 
 import aabalde.bots.exception.SuscriBotException;
 import aabalde.bots.model.BotList;
-import aabalde.bots.model.UFromCSVFormat;
+import aabalde.bots.model.BotCSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Message;
@@ -256,7 +256,7 @@ public class SuscriBot extends TelegramLongPollingBot{
                 List<BotUser> users = listData.get(category);
                 for(BotUser user : users){
                     String userRep = user.toString();
-                    UFromCSVFormat.printCSVRecord(pw, listName, description, category, userRep);
+                    BotCSVFormat.printCSVRecord(pw, listName, description, category, userRep);
                 }
             }
         }
@@ -271,7 +271,7 @@ public class SuscriBot extends TelegramLongPollingBot{
         }
         FileReader fr = new FileReader(dataFile);
 
-        List<CSVRecord> records = UFromCSVFormat.readCSVRecord(fr);
+        List<CSVRecord> records = BotCSVFormat.readCSVRecord(fr);
         for(CSVRecord record : records){
             String listName = record.get(0);
             String listDesc = record.get(1);
