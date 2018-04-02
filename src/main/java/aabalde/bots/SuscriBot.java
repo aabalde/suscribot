@@ -80,6 +80,7 @@ public class SuscriBot extends TelegramLongPollingBot{
 
             String text = message.getText().trim();
             BotUser u = new BotUser(message.getFrom());
+            String lastName = u.getLastName();
 
             try{
                 //Only work if a bot command has been received
@@ -100,12 +101,22 @@ public class SuscriBot extends TelegramLongPollingBot{
                         case SUBSCRIBE:
                             subscribe(text, u);
                             backup();
-                            sendMessage(chatId,
-                                    u.getFirstName() + " " + u.getLastName() + " added to list");
+                            StringBuilder sbSubscribe = new StringBuilder();
+                            sbSubscribe.append(u.getFirstName());
+                            if(lastName != null && !lastName.isEmpty()){
+                                sbSubscribe.append(" " + lastName);
+                            }
+                            sbSubscribe.append(" added to list");
+                            sendMessage(chatId, sbSubscribe.toString());
                             break;
                         case UNSUBSCRIBE:
                             unsubscribe(text, u);
                             backup();
+                            StringBuilder sbUnsubscribe = new StringBuilder();
+                            sbUnsubscribe.append(u.getFirstName());
+                            if(lastName != null && !lastName.isEmpty()){
+                                sbUnsubscribe.append(" " + lastName);
+                            }
                             sendMessage(chatId,
                                     "User " + u.getFirstName() + " " + u.getLastName() + " removed list");
                             break;
@@ -234,7 +245,7 @@ public class SuscriBot extends TelegramLongPollingBot{
 
             } else {
                 if(entity.getType().equals("mention")){
-                   throw new SuscriBotException("Sorry, you have not soul... (Wrong user mention made)");
+                   throw new SuscriBotException("Wrong user mention");
                 }
             }
         }
