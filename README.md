@@ -30,7 +30,7 @@ Bot commands:
 
 Comando docker para ejecutar:
 
-docker run -d -v /home/aabalde/Random/Telegram/Bots/suscribot/src/main/resources/:/root/resources --name suscribot suscribot
+docker run -d -v /home/aabalde/Random/Telegram/Bots/suscribot/src/main/resources/:/root/src/main/resources/ --name suscribot suscribot
 
 ## Versions
 
